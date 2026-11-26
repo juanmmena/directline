@@ -2,16 +2,21 @@ package com.directline.core.designsystem
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
@@ -25,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -35,9 +41,55 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.directline.R
 import com.directline.core.whatsapp.CountryInfo
+
+@Composable
+fun DirectlineLogoMark(
+  modifier: Modifier = Modifier,
+  size: Dp = 32.dp,
+) {
+  Surface(
+    modifier = modifier.size(size),
+    shape = RoundedCornerShape(size * 0.28f),
+    color = MaterialTheme.colorScheme.primary,
+    contentColor = MaterialTheme.colorScheme.onPrimary,
+  ) {
+    Box(contentAlignment = Alignment.Center) {
+      Icon(
+        painter = painterResource(id = R.drawable.ic_directline_logo),
+        contentDescription = null,
+        modifier = Modifier.size(size * 0.68f),
+      )
+    }
+  }
+}
+
+@Composable
+fun ReadableWidthContainer(
+  modifier: Modifier = Modifier,
+  content: @Composable () -> Unit,
+) {
+  Box(
+    modifier = modifier.fillMaxSize(),
+    contentAlignment = Alignment.TopCenter,
+  ) {
+    Box(
+      modifier = Modifier
+        .fillMaxWidth()
+        .widthIn(max = DirectlineSpacing.maxReadableWidth),
+    ) {
+      content()
+    }
+  }
+}
 
 @Composable
 fun SectionHeader(
@@ -74,7 +126,7 @@ fun EmptyStateCard(
   Card(
     modifier = modifier.fillMaxWidth(),
     colors = CardDefaults.cardColors(
-      containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+      containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
     ),
   ) {
     Column(
@@ -122,7 +174,9 @@ fun StatusBanner(
   }
 
   Card(
-    modifier = modifier.fillMaxWidth(),
+    modifier = modifier
+      .fillMaxWidth()
+      .semantics { liveRegion = LiveRegionMode.Polite },
     colors = CardDefaults.cardColors(containerColor = container, contentColor = content),
   ) {
     Row(
@@ -145,7 +199,7 @@ fun StatusBanner(
         IconButton(onClick = onDismiss) {
           Icon(
             imageVector = Icons.Default.Close,
-            contentDescription = "Dismiss",
+            contentDescription = "Dismiss notice",
           )
         }
       }
@@ -192,16 +246,18 @@ fun CountryPickerDialog(
         Spacer(modifier = Modifier.height(DirectlineSpacing.sm))
         LazyColumn(modifier = Modifier.heightIn(max = 320.dp)) {
           if (allowClear) {
-            item {
+            item(key = "clear_country") {
               Row(
                 modifier = Modifier
                   .fillMaxWidth()
+                  .heightIn(min = 48.dp)
                   .clickable {
                     onSelect(null)
                     onDismiss()
                   }
                   .padding(vertical = 12.dp, horizontal = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
               ) {
                 Text("None (always require selection)", style = MaterialTheme.typography.bodyMedium)
               }
@@ -213,6 +269,7 @@ fun CountryPickerDialog(
             Row(
               modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(min = 48.dp)
                 .clickable {
                   onSelect(country)
                   onDismiss()
@@ -221,8 +278,9 @@ fun CountryPickerDialog(
               horizontalArrangement = Arrangement.SpaceBetween,
               verticalAlignment = Alignment.CenterVertically,
             ) {
+              val flagPrefix = country.flagEmoji.takeIf { it.isNotEmpty() }?.let { "$it  " }.orEmpty()
               Text(
-                text = "${country.name} (${country.isoCode})",
+                text = "$flagPrefix${country.name} (${country.isoCode})",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                 modifier = Modifier.weight(1f),

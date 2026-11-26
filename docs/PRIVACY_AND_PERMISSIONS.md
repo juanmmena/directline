@@ -13,19 +13,22 @@ Directline is designed from the ground up to be **local-first**, **offline-first
 
 ## Android Permissions
 
-Directline declares **zero** runtime or sensitive permissions in `AndroidManifest.xml`.
+Directline declares only the network permissions required by the **Google Mobile Ads SDK (AdMob)**:
+- `INTERNET`
+- `ACCESS_NETWORK_STATE`
 
 Explicitly forbidden permissions:
 - `READ_CONTACTS` / `WRITE_CONTACTS`
 - `READ_PHONE_STATE`
 - `SEND_SMS` / `CALL_PHONE`
 - `QUERY_ALL_PACKAGES`
-- `INTERNET`
 - Broad external storage permissions (`READ_EXTERNAL_STORAGE` / `WRITE_EXTERNAL_STORAGE`)
 
-CSV import and export use Android's **Storage Access Framework** (`ACTION_OPEN_DOCUMENT` / `ACTION_CREATE_DOCUMENT`), granting one-time scoped access only to the user-selected file.
+### AdMob Configuration
+- **Debug builds** always use official Google AdMob test IDs (`ca-app-pub-3940256099942544~3347511713` app ID, `9214589741` adaptive banner, `1033173712` interstitial).
+- **Release builds** read `ADMOB_APP_ID`, `ADMOB_BANNER_AD_UNIT_ID`, and `ADMOB_INTERSTITIAL_AD_UNIT_ID` from Gradle properties or environment variables (never hardcoded in source control).
+- Interstitial ads never block WhatsApp launches when offline or unloaded.
 
 ## Data Deletion
 
-- Deleting an individual contact removes only that contact, its phone numbers, and its tag links. Templates and interaction history snapshots remain intact.
-- **Settings → Delete All Local Data** permanently clears contacts, tags, templates, categories, interaction history, and preferences stored on the device.
+- **Settings → Delete All Local Data** permanently clears templates, categories, interaction history, and preferences stored on the device.

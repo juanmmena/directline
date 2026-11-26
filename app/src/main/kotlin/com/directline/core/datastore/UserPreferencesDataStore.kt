@@ -3,6 +3,7 @@ package com.directline.core.datastore
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -24,6 +25,7 @@ class UserPreferencesDataStore @Inject constructor(
 ) {
   private object Keys {
     val THEME_MODE = stringPreferencesKey("theme_mode")
+    val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
     val DEFAULT_COUNTRY_ISO = stringPreferencesKey("default_country_iso")
     val DEFAULT_MESSAGE_PREFIX = stringPreferencesKey("default_message_prefix")
   }
@@ -35,6 +37,7 @@ class UserPreferencesDataStore @Inject constructor(
 
     UserPreferences(
       themeMode = themeMode,
+      dynamicColor = prefs[Keys.DYNAMIC_COLOR] ?: false,
       defaultCountryIso = prefs[Keys.DEFAULT_COUNTRY_ISO].orEmpty(),
       defaultMessagePrefix = prefs[Keys.DEFAULT_MESSAGE_PREFIX].orEmpty(),
     )
@@ -43,6 +46,12 @@ class UserPreferencesDataStore @Inject constructor(
   suspend fun setThemeMode(themeMode: ThemeMode) {
     context.userPreferencesDataStore.edit { prefs ->
       prefs[Keys.THEME_MODE] = themeMode.name
+    }
+  }
+
+  suspend fun setDynamicColor(enabled: Boolean) {
+    context.userPreferencesDataStore.edit { prefs ->
+      prefs[Keys.DYNAMIC_COLOR] = enabled
     }
   }
 

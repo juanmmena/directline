@@ -13,6 +13,15 @@ data class CountryInfo(
   val callingCode: Int,
 ) {
   val formattedCallingCode: String get() = "+$callingCode"
+
+  val flagEmoji: String
+    get() {
+      val code = isoCode.trim().uppercase(Locale.ROOT)
+      if (code.length != 2 || !code[0].isLetter() || !code[1].isLetter()) return ""
+      val first = Character.toChars(0x1F1E6 + (code[0] - 'A'))
+      val second = Character.toChars(0x1F1E6 + (code[1] - 'A'))
+      return String(first) + String(second)
+    }
 }
 
 sealed interface PhoneNumberValidationResult {

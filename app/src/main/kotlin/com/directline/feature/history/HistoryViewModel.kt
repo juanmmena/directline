@@ -54,8 +54,6 @@ class HistoryViewModel @Inject constructor(
       val result = launchWhatsAppUseCase.launchNormalized(
         normalizedE164 = item.phoneNumberSnapshot,
         message = item.messagePreview,
-        contactId = item.contactId,
-        contactName = item.contactNameSnapshot,
       )
       feedback.update {
         when (result) {

@@ -11,10 +11,8 @@ import com.directline.core.whatsapp.PhoneNumberValidationResult
 import com.directline.core.whatsapp.PhoneNumberValidator
 import com.directline.core.whatsapp.PhoneValidationError
 import com.directline.core.whatsapp.WhatsAppLaunchResult
-import com.directline.domain.model.Contact
 import com.directline.domain.model.InteractionHistory
 import com.directline.domain.model.MessageTemplate
-import com.directline.domain.repository.ContactRepository
 import com.directline.domain.repository.HistoryRepository
 import com.directline.domain.repository.PreferencesRepository
 import com.directline.domain.repository.TemplateRepository
@@ -38,10 +36,8 @@ data class HomeUiState(
   val feedbackMessage: String? = null,
   val isFeedbackError: Boolean = false,
   val incomingSharedNotice: String? = null,
-  val favorites: List<Contact> = emptyList(),
   val recentHistory: List<InteractionHistory> = emptyList(),
   val templates: List<MessageTemplate> = emptyList(),
-  val countries: List<CountryInfo> = emptyList(),
 )
 
 private data class HomeFormState(
@@ -60,20 +56,20 @@ class HomeViewModel @Inject constructor(
   private val templateProcessor: TemplateProcessor,
   private val sharedTextPhoneExtractor: SharedTextPhoneExtractor,
   private val launchWhatsAppUseCase: LaunchWhatsAppUseCase,
-  private val contactRepository: ContactRepository,
   private val historyRepository: HistoryRepository,
   private val templateRepository: TemplateRepository,
   private val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
 
+  val countries: List<CountryInfo> = countryCodeProvider.allCountries
+
   private val formState = MutableStateFlow(HomeFormState())
 
   val uiState: StateFlow<HomeUiState> = combine(
     formState,
-    contactRepository.observeFavorites(),
     historyRepository.observeRecentHistory(limit = 5),
     templateRepository.observeTemplates(),
-  ) { form, favorites, recent, templates ->
+  ) { form, recent, templates ->
     val validation = phoneNumberValidator.validate(
       rawInput = form.phoneInput,
       selectedCountryIso = form.selectedCountry?.isoCode,
@@ -86,15 +82,13 @@ class HomeViewModel @Inject constructor(
       feedbackMessage = form.feedbackMessage,
       isFeedbackError = form.isFeedbackError,
       incomingSharedNotice = form.incomingSharedNotice,
-      favorites = favorites,
       recentHistory = recent,
       templates = templates,
-      countries = countryCodeProvider.allCountries,
     )
   }.stateIn(
     scope = viewModelScope,
     started = SharingStarted.WhileSubscribed(5_000),
-    initialValue = HomeUiState(countries = countryCodeProvider.allCountries),
+    initialValue = HomeUiState(),
   )
 
   init {
@@ -161,7 +155,7 @@ class HomeViewModel @Inject constructor(
     }
   }
 
-  fun prefillFromContactOrHistory(phoneE164: String, message: String? = null) {
+  fun prefillFromHistory(phoneE164: String, message: String? = null) {
     formState.update {
       it.copy(
         phoneInput = phoneE164,
@@ -199,17 +193,11 @@ class HomeViewModel @Inject constructor(
     }
   }
 
-  fun launchNormalizedNumber(
-    normalizedE164: String,
-    contactId: String? = null,
-    contactName: String? = null,
-  ) {
+  fun launchNormalizedNumber(normalizedE164: String) {
     viewModelScope.launch {
       val result = launchWhatsAppUseCase.launchNormalized(
         normalizedE164 = normalizedE164,
         message = formState.value.messageInput,
-        contactId = contactId,
-        contactName = contactName,
       )
       handleLaunchResult(result)
     }

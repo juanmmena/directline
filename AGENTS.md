@@ -9,8 +9,7 @@
 - [README.md](README.md) — Setup, build, install, and test commands.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — MVVM layers, WhatsApp pipeline, Room ER schema, and navigation.
 - [docs/WHATSAPP_INTEGRATION.md](docs/WHATSAPP_INTEGRATION.md) — Click to Chat format, URL encoding, WhatsApp Business behavior, and limitations.
-- [docs/PRIVACY_AND_PERMISSIONS.md](docs/PRIVACY_AND_PERMISSIONS.md) — Local-first guarantees, zero unnecessary permissions, and data deletion rules.
-- [docs/CSV_FORMAT.md](docs/CSV_FORMAT.md) — CSV import/export schema and validation behavior.
+- [docs/PRIVACY_AND_PERMISSIONS.md](docs/PRIVACY_AND_PERMISSIONS.md) — Local-first guarantees, permissions, AdMob configuration, and data deletion rules.
 
 ## Technology Stack
 
@@ -28,17 +27,17 @@
 Pragmatic MVVM with clean separation of concerns in a single `:app` module (`com.directline`):
 
 - `com.directline.core.whatsapp` — Phone parsing/validation/normalization, Click to Chat destination builder, message URL encoding, and `ACTION_VIEW` Android Intent launcher.
+- `com.directline.core.ads` — Google AdMob adaptive banner (`AdMobBanner`) and frequency-capped interstitial manager (`InterstitialAdManager`) using official test IDs in `debug`.
 - `com.directline.core.template` — Template variable extraction, validation, and substitution (`{{name}}`, `{{phone}}`, `{{product}}`, `{{price}}`, `{{date}}`).
-- `com.directline.core.csv` — RFC-4180 CSV import/export with row-level validation and duplicate detection.
 - `com.directline.core.share` — Safe extraction of candidate phone numbers from incoming `ACTION_SEND` text.
 - `com.directline.core.database` — Room database, entities, DAOs.
-- `com.directline.core.datastore` — DataStore preferences (theme, default country, default message).
+- `com.directline.core.datastore` — DataStore preferences (theme, dynamic color, default country, default message).
 - `com.directline.core.designsystem` — Material 3 theme, colors, typography, reusable UI components.
-- `com.directline.core.navigation` — Bottom navigation destinations and `NavHost`.
+- `com.directline.core.navigation` — Adaptive navigation (`NavigationBar` / `NavigationRail` / `PermanentNavigationDrawer`) and `NavHost`.
 - `com.directline.domain` — Domain models, repository interfaces, and use cases (`LaunchWhatsAppUseCase`).
 - `com.directline.data` — Entity-to-domain mappers and Room/DataStore repository implementations.
 - `com.directline.di` — Hilt modules (`DatabaseModule`, `RepositoryModule`, `WhatsAppModule`).
-- `com.directline.feature.*` — Feature screens and ViewModels (`home`, `contacts`, `templates`, `history`, `settings`).
+- `com.directline.feature.*` — Feature screens and ViewModels (`home`, `templates`, `history`, `settings`).
 
 ## Naming & State Management Conventions
 

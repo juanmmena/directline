@@ -6,11 +6,10 @@ A native, local-first, offline-first Android application built with Kotlin and J
 
 - **WhatsApp Click to Chat Launcher:** International phone validation & E.164 normalization (`libphonenumber`), country selector, optional prefilled message, and official `https://wa.me/...` launch via `ACTION_VIEW`.
 - **Reusable Message Templates:** Categorized templates with dynamic variables (`{{name}}`, `{{phone}}`, `{{product}}`, `{{price}}`, `{{date}}`), live preview, and unresolved placeholder protection.
-- **Local Contacts & Favorites:** Manage contacts with multiple validated phone numbers, notes, custom tags, and favorites without requesting Android Contacts permission.
 - **Interaction History:** Local log of WhatsApp launch attempts with phone number snapshots, quick reopen, and deletion.
 - **Android Sharesheet Integration:** Share text or numbers from other apps into Directline for review before opening WhatsApp.
-- **CSV Import & Export:** Backup and restore local contacts using Android's Storage Access Framework (`name,phone_number,tags,notes`).
-- **Privacy First:** Zero backend, zero accounts, minimal permissions, and automatic cloud backup disabled.
+- **Google AdMob Integration:** Adaptive Banner and frequency-capped Interstitial ads using official Google test IDs in `debug` builds (configurable via `ADMOB_APP_ID`, `ADMOB_BANNER_AD_UNIT_ID`, and `ADMOB_INTERSTITIAL_AD_UNIT_ID` for `release` builds).
+- **Privacy First:** Zero backend, zero accounts, no Android Contacts access, and automatic cloud backup disabled.
 
 ## Prerequisites
 
