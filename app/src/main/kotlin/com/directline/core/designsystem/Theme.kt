@@ -1,0 +1,124 @@
+package com.directline.core.designsystem
+
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.directline.domain.model.ThemeMode
+
+private val LightColorScheme = lightColorScheme(
+  primary = Color(0xFF0E7C66),
+  onPrimary = Color(0xFFFFFFFF),
+  primaryContainer = Color(0xFFA6F2DF),
+  onPrimaryContainer = Color(0xFF00201A),
+  secondary = Color(0xFF4A635D),
+  onSecondary = Color(0xFFFFFFFF),
+  secondaryContainer = Color(0xFFCCE8E0),
+  onSecondaryContainer = Color(0xFF06201B),
+  tertiary = Color(0xFF3F6374),
+  onTertiary = Color(0xFFFFFFFF),
+  tertiaryContainer = Color(0xFFC3E8FC),
+  onTertiaryContainer = Color(0xFF001F2A),
+  error = Color(0xFFBA1A1A),
+  onError = Color(0xFFFFFFFF),
+  errorContainer = Color(0xFFFFDAD6),
+  onErrorContainer = Color(0xFF410002),
+  background = Color(0xFFF6FBF9),
+  onBackground = Color(0xFF171D1B),
+  surface = Color(0xFFF6FBF9),
+  onSurface = Color(0xFF171D1B),
+  surfaceVariant = Color(0xFFDBE5E1),
+  onSurfaceVariant = Color(0xFF3F4946),
+  outline = Color(0xFF6F7976),
+)
+
+private val DarkColorScheme = darkColorScheme(
+  primary = Color(0xFF8AD6C3),
+  onPrimary = Color(0xFF00382E),
+  primaryContainer = Color(0xFF005143),
+  onPrimaryContainer = Color(0xFFA6F2DF),
+  secondary = Color(0xFFB1CCC4),
+  onSecondary = Color(0xFF1C3530),
+  secondaryContainer = Color(0xFF334B46),
+  onSecondaryContainer = Color(0xFFCCE8E0),
+  tertiary = Color(0xFFA7CCE0),
+  onTertiary = Color(0xFF0B3444),
+  tertiaryContainer = Color(0xFF274B5C),
+  onTertiaryContainer = Color(0xFFC3E8FC),
+  error = Color(0xFFFFB4AB),
+  onError = Color(0xFF690005),
+  errorContainer = Color(0xFF93000A),
+  onErrorContainer = Color(0xFFFFDAD6),
+  background = Color(0xFF0F1513),
+  onBackground = Color(0xFFDFE4E1),
+  surface = Color(0xFF0F1513),
+  onSurface = Color(0xFFDFE4E1),
+  surfaceVariant = Color(0xFF3F4946),
+  onSurfaceVariant = Color(0xFFBFC9C5),
+  outline = Color(0xFF89938F),
+)
+
+val DirectlineTypography = Typography(
+  headlineSmall = TextStyle(
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 22.sp,
+    lineHeight = 28.sp,
+  ),
+  titleLarge = TextStyle(
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 20.sp,
+    lineHeight = 26.sp,
+  ),
+  titleMedium = TextStyle(
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 16.sp,
+    lineHeight = 22.sp,
+  ),
+  bodyLarge = TextStyle(
+    fontWeight = FontWeight.Normal,
+    fontSize = 16.sp,
+    lineHeight = 22.sp,
+  ),
+  bodyMedium = TextStyle(
+    fontWeight = FontWeight.Normal,
+    fontSize = 14.sp,
+    lineHeight = 20.sp,
+  ),
+  labelLarge = TextStyle(
+    fontWeight = FontWeight.Medium,
+    fontSize = 14.sp,
+    lineHeight = 20.sp,
+  ),
+)
+
+object DirectlineSpacing {
+  val xs = 4.dp
+  val sm = 8.dp
+  val md = 16.dp
+  val lg = 24.dp
+}
+
+@Composable
+fun DirectlineTheme(
+  themeMode: ThemeMode = ThemeMode.SYSTEM,
+  content: @Composable () -> Unit,
+) {
+  val darkTheme = when (themeMode) {
+    ThemeMode.SYSTEM -> isSystemInDarkTheme()
+    ThemeMode.LIGHT -> false
+    ThemeMode.DARK -> true
+  }
+
+  MaterialTheme(
+    colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
+    typography = DirectlineTypography,
+    content = content,
+  )
+}
