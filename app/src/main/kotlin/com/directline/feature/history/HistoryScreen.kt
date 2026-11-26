@@ -52,6 +52,7 @@ import java.util.Date
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
+  onBeforeWhatsAppLaunch: (proceed: () -> Unit) -> Unit,
   onShowSnackbar: (String) -> Unit,
   viewModel: HistoryViewModel = hiltViewModel(),
 ) {
@@ -106,7 +107,7 @@ fun HistoryScreen(
           }
         } else {
           items(state.items, key = { it.id }) { item ->
-            val label = item.contactNameSnapshot ?: item.phoneNumberSnapshot
+            val label = item.phoneNumberSnapshot
             val formattedTime = remember(item.createdAt) {
               DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
                 .format(Date(item.createdAt))
@@ -128,14 +129,9 @@ fun HistoryScreen(
                     text = label,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                   )
-                  if (item.contactNameSnapshot != null) {
-                    Text(
-                      text = item.phoneNumberSnapshot,
-                      style = MaterialTheme.typography.bodySmall,
-                      color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                  }
                   item.messagePreview?.let { preview ->
                     Text(
                       text = preview,
@@ -150,7 +146,9 @@ fun HistoryScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                   )
                 }
-                IconButton(onClick = { viewModel.reopenDestination(item) }) {
+                IconButton(
+                  onClick = { onBeforeWhatsAppLaunch { viewModel.reopenDestination(item) } },
+                ) {
                   Icon(
                     imageVector = Icons.AutoMirrored.Filled.Send,
                     contentDescription = "Reopen WhatsApp for $label",

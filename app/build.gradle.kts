@@ -6,6 +6,16 @@ plugins {
   alias(libs.plugins.hilt)
 }
 
+// Official Google AdMob test IDs used for debug builds and safe CI fallback
+val testAdmobAppId = "ca-app-pub-3940256099942544~3347511713"
+val testAdmobBannerUnitId = "ca-app-pub-3940256099942544/9214589741"
+val testAdmobInterstitialUnitId = "ca-app-pub-3940256099942544/1033173712"
+
+fun resolveAdmobProp(name: String, fallback: String): String =
+  (project.findProperty(name) as String?)?.takeIf { it.isNotBlank() }
+    ?: System.getenv(name)?.takeIf { it.isNotBlank() }
+    ?: fallback
+
 android {
   namespace = "com.directline"
   compileSdk = 37
@@ -21,10 +31,23 @@ android {
   }
 
   buildTypes {
+    debug {
+      manifestPlaceholders["admobAppId"] = testAdmobAppId
+      buildConfigField("String", "ADMOB_BANNER_AD_UNIT_ID", "\"$testAdmobBannerUnitId\"")
+      buildConfigField("String", "ADMOB_INTERSTITIAL_AD_UNIT_ID", "\"$testAdmobInterstitialUnitId\"")
+    }
     release {
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+
+      val releaseAppId = resolveAdmobProp("ADMOB_APP_ID", testAdmobAppId)
+      val releaseBannerId = resolveAdmobProp("ADMOB_BANNER_AD_UNIT_ID", testAdmobBannerUnitId)
+      val releaseInterstitialId = resolveAdmobProp("ADMOB_INTERSTITIAL_AD_UNIT_ID", testAdmobInterstitialUnitId)
+
+      manifestPlaceholders["admobAppId"] = releaseAppId
+      buildConfigField("String", "ADMOB_BANNER_AD_UNIT_ID", "\"$releaseBannerId\"")
+      buildConfigField("String", "ADMOB_INTERSTITIAL_AD_UNIT_ID", "\"$releaseInterstitialId\"")
     }
   }
 
@@ -36,7 +59,7 @@ android {
   buildFeatures {
     compose = true
     aidl = false
-    buildConfig = false
+    buildConfig = true
     shaders = false
   }
 
@@ -94,6 +117,9 @@ dependencies {
 
   // Phone number parsing & validation
   implementation(libs.libphonenumber)
+
+  // Google AdMob
+  implementation(libs.google.play.services.ads)
 
   // Local unit tests
   testImplementation(libs.junit)

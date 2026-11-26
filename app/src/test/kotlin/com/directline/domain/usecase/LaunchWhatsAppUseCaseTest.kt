@@ -9,13 +9,9 @@ import com.directline.core.whatsapp.WhatsAppDestination
 import com.directline.core.whatsapp.WhatsAppDestinationBuilder
 import com.directline.core.whatsapp.WhatsAppLaunchResult
 import com.directline.core.whatsapp.WhatsAppLauncher
-import com.directline.domain.model.Contact
 import com.directline.domain.model.InteractionActionType
 import com.directline.domain.model.InteractionHistory
-import com.directline.domain.model.Tag
-import com.directline.domain.repository.ContactRepository
 import com.directline.domain.repository.HistoryRepository
-import com.directline.domain.repository.PhoneNumberDraft
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
@@ -41,16 +37,12 @@ class LaunchWhatsAppUseCaseTest {
     override fun observeRecentHistory(limit: Int): Flow<List<InteractionHistory>> =
       MutableStateFlow(recorded.take(limit))
     override suspend fun recordLaunchAttempt(
-      contactId: String?,
-      contactNameSnapshot: String?,
       phoneNumberSnapshot: String,
       messagePreview: String?,
     ) {
       recorded.add(
         InteractionHistory(
           id = "h${recorded.size + 1}",
-          contactId = contactId,
-          contactNameSnapshot = contactNameSnapshot,
           phoneNumberSnapshot = phoneNumberSnapshot,
           messagePreview = messagePreview,
           actionType = InteractionActionType.WHATSAPP_LAUNCH_ATTEMPT,
@@ -62,25 +54,6 @@ class LaunchWhatsAppUseCaseTest {
     override suspend fun clearHistory() { recorded.clear() }
   }
 
-  private class FakeContactRepository : ContactRepository {
-    override fun observeContacts(): Flow<List<Contact>> = MutableStateFlow(emptyList())
-    override fun observeFavorites(): Flow<List<Contact>> = MutableStateFlow(emptyList())
-    override fun observeTags(): Flow<List<Tag>> = MutableStateFlow(emptyList())
-    override suspend fun getContactById(id: String): Contact? = null
-    override suspend fun findContactByNormalizedPhone(normalizedPhone: String): Contact? = null
-    override suspend fun saveContact(
-      id: String?,
-      name: String,
-      notes: String,
-      isFavorite: Boolean,
-      phoneNumbers: List<PhoneNumberDraft>,
-      tagNames: List<String>,
-    ): String = "id"
-    override suspend fun toggleFavorite(contactId: String, isFavorite: Boolean) = Unit
-    override suspend fun deleteContact(contactId: String) = Unit
-    override suspend fun deleteAllContacts() = Unit
-  }
-
   private fun createUseCase(
     launcherResult: (WhatsAppDestination) -> WhatsAppLaunchResult,
     historyRepo: FakeHistoryRepository,
@@ -90,7 +63,7 @@ class LaunchWhatsAppUseCaseTest {
     val builder = WhatsAppDestinationBuilder(MessageEncoder())
     val fakeIntent = FakeIntentLauncher(launcherResult)
     val whatsAppLauncher = WhatsAppLauncher(validator, builder, fakeIntent)
-    val useCase = LaunchWhatsAppUseCase(whatsAppLauncher, FakeContactRepository(), historyRepo)
+    val useCase = LaunchWhatsAppUseCase(whatsAppLauncher, historyRepo)
     return useCase to fakeIntent
   }
 

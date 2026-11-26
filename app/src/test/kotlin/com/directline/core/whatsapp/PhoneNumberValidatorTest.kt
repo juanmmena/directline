@@ -65,4 +65,11 @@ class PhoneNumberValidatorTest {
     val result = validator.validate("hello world", "CO")
     assertTrue(result is PhoneNumberValidationResult.Invalid)
   }
+
+  @Test
+  fun `CountryInfo computes regional indicator flag emoji for alpha-2 codes`() {
+    assertEquals("\uD83C\uDDE8\uD83C\uDDF4", CountryInfo("CO", "Colombia", 57).flagEmoji)
+    assertEquals("\uD83C\uDDFA\uD83C\uDDF8", CountryInfo("us", "United States", 1).flagEmoji)
+    assertEquals("", CountryInfo("001", "World", 800).flagEmoji)
+  }
 }

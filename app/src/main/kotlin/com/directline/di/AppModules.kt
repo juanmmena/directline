@@ -3,16 +3,13 @@ package com.directline.di
 import android.content.Context
 import androidx.room.Room
 import com.directline.core.database.DirectlineDatabase
-import com.directline.core.database.dao.ContactDao
 import com.directline.core.database.dao.HistoryDao
 import com.directline.core.database.dao.TemplateDao
 import com.directline.core.whatsapp.AndroidIntentLauncher
 import com.directline.core.whatsapp.DefaultAndroidIntentLauncher
-import com.directline.data.repository.ContactRepositoryImpl
 import com.directline.data.repository.HistoryRepositoryImpl
 import com.directline.data.repository.PreferencesRepositoryImpl
 import com.directline.data.repository.TemplateRepositoryImpl
-import com.directline.domain.repository.ContactRepository
 import com.directline.domain.repository.HistoryRepository
 import com.directline.domain.repository.PreferencesRepository
 import com.directline.domain.repository.TemplateRepository
@@ -36,11 +33,10 @@ object DatabaseModule {
       context,
       DirectlineDatabase::class.java,
       DirectlineDatabase.DATABASE_NAME,
-    ).build()
+    )
+      .fallbackToDestructiveMigration(dropAllTables = true)
+      .build()
   }
-
-  @Provides
-  fun provideContactDao(db: DirectlineDatabase): ContactDao = db.contactDao()
 
   @Provides
   fun provideTemplateDao(db: DirectlineDatabase): TemplateDao = db.templateDao()
@@ -52,10 +48,6 @@ object DatabaseModule {
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
-  @Binds
-  @Singleton
-  abstract fun bindContactRepository(impl: ContactRepositoryImpl): ContactRepository
-
   @Binds
   @Singleton
   abstract fun bindTemplateRepository(impl: TemplateRepositoryImpl): TemplateRepository

@@ -14,6 +14,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.directline.core.ads.InterstitialAdManager
 import com.directline.core.designsystem.DirectlineTheme
 import com.directline.core.designsystem.resolveDarkTheme
 import com.directline.core.navigation.DirectlineApp
@@ -28,6 +29,9 @@ class MainActivity : ComponentActivity() {
 
   @Inject
   lateinit var preferencesRepository: PreferencesRepository
+
+  @Inject
+  lateinit var interstitialAdManager: InterstitialAdManager
 
   private val incomingSharedText = MutableStateFlow<String?>(null)
 
@@ -69,6 +73,12 @@ class MainActivity : ComponentActivity() {
           DirectlineApp(
             incomingSharedText = sharedText,
             onConsumeSharedText = { incomingSharedText.value = null },
+            onBeforeWhatsAppLaunch = { proceed ->
+              interstitialAdManager.maybeShowOnAction(
+                activity = this@MainActivity,
+                onComplete = proceed,
+              )
+            },
           )
         }
       }

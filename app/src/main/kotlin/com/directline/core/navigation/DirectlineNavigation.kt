@@ -1,20 +1,30 @@
 package com.directline.core.navigation
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.PermanentDrawerSheet
+import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -26,6 +36,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -35,7 +46,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.directline.feature.contacts.ContactsScreen
+import com.directline.core.ads.AdMobBanner
+import com.directline.core.designsystem.DirectlineLogoMark
+import com.directline.core.designsystem.DirectlineSpacing
 import com.directline.feature.history.HistoryScreen
 import com.directline.feature.home.HomeScreen
 import com.directline.feature.settings.SettingsScreen
@@ -48,7 +61,6 @@ enum class DirectlineTab(
   val icon: ImageVector,
 ) {
   HOME("home", "Home", Icons.Default.Home),
-  CONTACTS("contacts", "Contacts", Icons.Default.Contacts),
   TEMPLATES("templates", "Templates", Icons.Default.Description),
   HISTORY("history", "History", Icons.Default.History),
   SETTINGS("settings", "Settings", Icons.Default.Settings),
@@ -58,6 +70,7 @@ enum class DirectlineTab(
 fun DirectlineApp(
   incomingSharedText: String?,
   onConsumeSharedText: () -> Unit,
+  onBeforeWhatsAppLaunch: (proceed: () -> Unit) -> Unit,
 ) {
   val navController = rememberNavController()
   val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -91,38 +104,27 @@ fun DirectlineApp(
     }
   }
 
-  BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-    val useNavigationRail = maxWidth >= 600.dp
-
-    Row(modifier = Modifier.fillMaxSize()) {
-      if (useNavigationRail) {
-        NavigationRail {
-          DirectlineTab.entries.forEach { tab ->
-            val selected = currentDestination?.hierarchy?.any { it.route == tab.route } == true
-            NavigationRailItem(
-              selected = selected,
-              onClick = { navigateToTab(tab) },
-              icon = { Icon(tab.icon, contentDescription = tab.label) },
-              label = { Text(tab.label) },
-            )
-          }
-        }
-      }
-
+  val contentScaffold: @Composable (showBottomBar: Boolean, modifier: Modifier) -> Unit =
+    { showBottomBar, modifier ->
       Scaffold(
-        modifier = Modifier.weight(1f),
+        modifier = modifier,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         bottomBar = {
-          if (!useNavigationRail) {
-            NavigationBar {
-              DirectlineTab.entries.forEach { tab ->
-                val selected = currentDestination?.hierarchy?.any { it.route == tab.route } == true
-                NavigationBarItem(
-                  selected = selected,
-                  onClick = { navigateToTab(tab) },
-                  icon = { Icon(tab.icon, contentDescription = tab.label) },
-                  label = { Text(tab.label) },
-                )
+          Column(modifier = Modifier.fillMaxWidth()) {
+            AdMobBanner(
+              modifier = if (showBottomBar) Modifier else Modifier.navigationBarsPadding(),
+            )
+            if (showBottomBar) {
+              NavigationBar {
+                DirectlineTab.entries.forEach { tab ->
+                  val selected = currentDestination?.hierarchy?.any { it.route == tab.route } == true
+                  NavigationBarItem(
+                    selected = selected,
+                    onClick = { navigateToTab(tab) },
+                    icon = { Icon(tab.icon, contentDescription = tab.label) },
+                    label = { Text(tab.label, maxLines = 1) },
+                  )
+                }
               }
             }
           }
@@ -140,12 +142,9 @@ fun DirectlineApp(
               pendingTemplateMessage = pendingTemplateMessage,
               onConsumePendingTemplate = { pendingTemplateMessage = null },
               onNavigateToHistory = { navigateToTab(DirectlineTab.HISTORY) },
-              onNavigateToContacts = { navigateToTab(DirectlineTab.CONTACTS) },
+              onBeforeWhatsAppLaunch = onBeforeWhatsAppLaunch,
               onShowSnackbar = showSnackbar,
             )
-          }
-          composable(DirectlineTab.CONTACTS.route) {
-            ContactsScreen(onShowSnackbar = showSnackbar)
           }
           composable(DirectlineTab.TEMPLATES.route) {
             TemplatesScreen(
@@ -157,12 +156,76 @@ fun DirectlineApp(
             )
           }
           composable(DirectlineTab.HISTORY.route) {
-            HistoryScreen(onShowSnackbar = showSnackbar)
+            HistoryScreen(
+              onBeforeWhatsAppLaunch = onBeforeWhatsAppLaunch,
+              onShowSnackbar = showSnackbar,
+            )
           }
           composable(DirectlineTab.SETTINGS.route) {
             SettingsScreen(onShowSnackbar = showSnackbar)
           }
         }
+      }
+    }
+
+  BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+    when {
+      maxWidth >= 840.dp -> {
+        PermanentNavigationDrawer(
+          drawerContent = {
+            PermanentDrawerSheet(modifier = Modifier.width(240.dp)) {
+              Row(
+                modifier = Modifier.padding(DirectlineSpacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+              ) {
+                DirectlineLogoMark(size = 36.dp)
+                Text("Directline", style = MaterialTheme.typography.titleLarge)
+              }
+              Spacer(modifier = Modifier.height(DirectlineSpacing.sm))
+              DirectlineTab.entries.forEach { tab ->
+                val selected = currentDestination?.hierarchy?.any { it.route == tab.route } == true
+                NavigationDrawerItem(
+                  selected = selected,
+                  onClick = { navigateToTab(tab) },
+                  icon = { Icon(tab.icon, contentDescription = null) },
+                  label = { Text(tab.label) },
+                  modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+                )
+              }
+            }
+          },
+        ) {
+          contentScaffold(false, Modifier.fillMaxSize())
+        }
+      }
+
+      maxWidth >= 600.dp -> {
+        Row(modifier = Modifier.fillMaxSize()) {
+          NavigationRail(
+            header = {
+              DirectlineLogoMark(
+                size = 36.dp,
+                modifier = Modifier.padding(vertical = 8.dp),
+              )
+            },
+          ) {
+            DirectlineTab.entries.forEach { tab ->
+              val selected = currentDestination?.hierarchy?.any { it.route == tab.route } == true
+              NavigationRailItem(
+                selected = selected,
+                onClick = { navigateToTab(tab) },
+                icon = { Icon(tab.icon, contentDescription = tab.label) },
+                label = { Text(tab.label, maxLines = 1) },
+              )
+            }
+          }
+          contentScaffold(false, Modifier.weight(1f))
+        }
+      }
+
+      else -> {
+        contentScaffold(true, Modifier.fillMaxSize())
       }
     }
   }
