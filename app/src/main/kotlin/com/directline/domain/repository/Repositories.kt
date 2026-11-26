@@ -65,6 +65,7 @@ interface HistoryRepository {
 interface PreferencesRepository {
   fun observePreferences(): Flow<UserPreferences>
   suspend fun setThemeMode(themeMode: ThemeMode)
+  suspend fun setDynamicColor(enabled: Boolean)
   suspend fun setDefaultCountryIso(countryIso: String)
   suspend fun setDefaultMessagePrefix(prefix: String)
   suspend fun resetPreferences()

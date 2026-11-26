@@ -27,7 +27,6 @@ import javax.inject.Inject
 data class SettingsUiState(
   val preferences: UserPreferences = UserPreferences(),
   val defaultCountry: CountryInfo? = null,
-  val countries: List<CountryInfo> = emptyList(),
   val pendingImportPreview: CsvImportPreview? = null,
   val feedbackMessage: String? = null,
   val isFeedbackError: Boolean = false,
@@ -49,6 +48,8 @@ class SettingsViewModel @Inject constructor(
   private val csvContactProcessor: CsvContactProcessor,
 ) : ViewModel() {
 
+  val countries: List<CountryInfo> = countryCodeProvider.allCountries
+
   private val transientState = MutableStateFlow(SettingsTransientState())
 
   val uiState: StateFlow<SettingsUiState> = combine(
@@ -58,7 +59,6 @@ class SettingsViewModel @Inject constructor(
     SettingsUiState(
       preferences = prefs,
       defaultCountry = countryCodeProvider.findByIso(prefs.defaultCountryIso),
-      countries = countryCodeProvider.allCountries,
       pendingImportPreview = transient.pendingImportPreview,
       feedbackMessage = transient.feedbackMessage,
       isFeedbackError = transient.isFeedbackError,
@@ -66,11 +66,15 @@ class SettingsViewModel @Inject constructor(
   }.stateIn(
     scope = viewModelScope,
     started = SharingStarted.WhileSubscribed(5_000),
-    initialValue = SettingsUiState(countries = countryCodeProvider.allCountries),
+    initialValue = SettingsUiState(),
   )
 
   fun setThemeMode(mode: ThemeMode) {
     viewModelScope.launch { preferencesRepository.setThemeMode(mode) }
+  }
+
+  fun setDynamicColor(enabled: Boolean) {
+    viewModelScope.launch { preferencesRepository.setDynamicColor(enabled) }
   }
 
   fun setDefaultCountry(country: CountryInfo?) {

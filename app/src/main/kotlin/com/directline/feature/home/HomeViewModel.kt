@@ -41,7 +41,6 @@ data class HomeUiState(
   val favorites: List<Contact> = emptyList(),
   val recentHistory: List<InteractionHistory> = emptyList(),
   val templates: List<MessageTemplate> = emptyList(),
-  val countries: List<CountryInfo> = emptyList(),
 )
 
 private data class HomeFormState(
@@ -66,6 +65,8 @@ class HomeViewModel @Inject constructor(
   private val preferencesRepository: PreferencesRepository,
 ) : ViewModel() {
 
+  val countries: List<CountryInfo> = countryCodeProvider.allCountries
+
   private val formState = MutableStateFlow(HomeFormState())
 
   val uiState: StateFlow<HomeUiState> = combine(
@@ -89,12 +90,11 @@ class HomeViewModel @Inject constructor(
       favorites = favorites,
       recentHistory = recent,
       templates = templates,
-      countries = countryCodeProvider.allCountries,
     )
   }.stateIn(
     scope = viewModelScope,
     started = SharingStarted.WhileSubscribed(5_000),
-    initialValue = HomeUiState(countries = countryCodeProvider.allCountries),
+    initialValue = HomeUiState(),
   )
 
   init {

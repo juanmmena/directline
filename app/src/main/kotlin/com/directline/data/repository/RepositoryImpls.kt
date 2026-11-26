@@ -307,6 +307,8 @@ class PreferencesRepositoryImpl @Inject constructor(
 
   override suspend fun setThemeMode(themeMode: ThemeMode) = dataStore.setThemeMode(themeMode)
 
+  override suspend fun setDynamicColor(enabled: Boolean) = dataStore.setDynamicColor(enabled)
+
   override suspend fun setDefaultCountryIso(countryIso: String) =
     dataStore.setDefaultCountryIso(countryIso)
 

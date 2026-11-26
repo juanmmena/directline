@@ -2,14 +2,17 @@ package com.directline.core.designsystem
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -35,9 +38,31 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.directline.core.whatsapp.CountryInfo
+
+@Composable
+fun ReadableWidthContainer(
+  modifier: Modifier = Modifier,
+  content: @Composable () -> Unit,
+) {
+  Box(
+    modifier = modifier.fillMaxSize(),
+    contentAlignment = Alignment.TopCenter,
+  ) {
+    Box(
+      modifier = Modifier
+        .fillMaxWidth()
+        .widthIn(max = DirectlineSpacing.maxReadableWidth),
+    ) {
+      content()
+    }
+  }
+}
 
 @Composable
 fun SectionHeader(
@@ -74,7 +99,7 @@ fun EmptyStateCard(
   Card(
     modifier = modifier.fillMaxWidth(),
     colors = CardDefaults.cardColors(
-      containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+      containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
     ),
   ) {
     Column(
@@ -122,7 +147,9 @@ fun StatusBanner(
   }
 
   Card(
-    modifier = modifier.fillMaxWidth(),
+    modifier = modifier
+      .fillMaxWidth()
+      .semantics { liveRegion = LiveRegionMode.Polite },
     colors = CardDefaults.cardColors(containerColor = container, contentColor = content),
   ) {
     Row(
@@ -145,7 +172,7 @@ fun StatusBanner(
         IconButton(onClick = onDismiss) {
           Icon(
             imageVector = Icons.Default.Close,
-            contentDescription = "Dismiss",
+            contentDescription = "Dismiss notice",
           )
         }
       }
@@ -192,16 +219,18 @@ fun CountryPickerDialog(
         Spacer(modifier = Modifier.height(DirectlineSpacing.sm))
         LazyColumn(modifier = Modifier.heightIn(max = 320.dp)) {
           if (allowClear) {
-            item {
+            item(key = "clear_country") {
               Row(
                 modifier = Modifier
                   .fillMaxWidth()
+                  .heightIn(min = 48.dp)
                   .clickable {
                     onSelect(null)
                     onDismiss()
                   }
                   .padding(vertical = 12.dp, horizontal = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
               ) {
                 Text("None (always require selection)", style = MaterialTheme.typography.bodyMedium)
               }
@@ -213,6 +242,7 @@ fun CountryPickerDialog(
             Row(
               modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(min = 48.dp)
                 .clickable {
                   onSelect(country)
                   onDismiss()

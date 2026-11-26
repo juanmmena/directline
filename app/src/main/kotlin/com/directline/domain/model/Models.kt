@@ -63,6 +63,7 @@ enum class ThemeMode {
 
 data class UserPreferences(
   val themeMode: ThemeMode = ThemeMode.SYSTEM,
+  val dynamicColor: Boolean = false,
   val defaultCountryIso: String = "",
   val defaultMessagePrefix: String = "",
 )

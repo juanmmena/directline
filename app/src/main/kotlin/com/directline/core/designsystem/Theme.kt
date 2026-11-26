@@ -1,12 +1,16 @@
 package com.directline.core.designsystem
 
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -37,6 +41,11 @@ private val LightColorScheme = lightColorScheme(
   surfaceVariant = Color(0xFFDBE5E1),
   onSurfaceVariant = Color(0xFF3F4946),
   outline = Color(0xFF6F7976),
+  surfaceContainerLowest = Color(0xFFFFFFFF),
+  surfaceContainerLow = Color(0xFFF0F5F3),
+  surfaceContainer = Color(0xFFEAEFED),
+  surfaceContainerHigh = Color(0xFFE4EAE7),
+  surfaceContainerHighest = Color(0xFFDFE4E1),
 )
 
 private val DarkColorScheme = darkColorScheme(
@@ -63,6 +72,11 @@ private val DarkColorScheme = darkColorScheme(
   surfaceVariant = Color(0xFF3F4946),
   onSurfaceVariant = Color(0xFFBFC9C5),
   outline = Color(0xFF89938F),
+  surfaceContainerLowest = Color(0xFF0A0F0E),
+  surfaceContainerLow = Color(0xFF171D1B),
+  surfaceContainer = Color(0xFF1B211F),
+  surfaceContainerHigh = Color(0xFF252B29),
+  surfaceContainerHighest = Color(0xFF303634),
 )
 
 val DirectlineTypography = Typography(
@@ -103,21 +117,34 @@ object DirectlineSpacing {
   val sm = 8.dp
   val md = 16.dp
   val lg = 24.dp
+  val maxReadableWidth = 680.dp
+}
+
+@Composable
+fun resolveDarkTheme(themeMode: ThemeMode): Boolean = when (themeMode) {
+  ThemeMode.SYSTEM -> isSystemInDarkTheme()
+  ThemeMode.LIGHT -> false
+  ThemeMode.DARK -> true
 }
 
 @Composable
 fun DirectlineTheme(
   themeMode: ThemeMode = ThemeMode.SYSTEM,
+  dynamicColor: Boolean = false,
   content: @Composable () -> Unit,
 ) {
-  val darkTheme = when (themeMode) {
-    ThemeMode.SYSTEM -> isSystemInDarkTheme()
-    ThemeMode.LIGHT -> false
-    ThemeMode.DARK -> true
+  val darkTheme = resolveDarkTheme(themeMode)
+  val colorScheme = when {
+    dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+      val context = LocalContext.current
+      if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    }
+    darkTheme -> DarkColorScheme
+    else -> LightColorScheme
   }
 
   MaterialTheme(
-    colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme,
+    colorScheme = colorScheme,
     typography = DirectlineTypography,
     content = content,
   )

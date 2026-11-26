@@ -31,7 +31,6 @@ data class ContactsUiState(
   val favoritesOnly: Boolean = false,
   val selectedTagName: String? = null,
   val defaultCountryIso: String = "",
-  val countries: List<CountryInfo> = emptyList(),
   val feedbackMessage: String? = null,
   val isFeedbackError: Boolean = false,
 )
@@ -52,6 +51,8 @@ class ContactsViewModel @Inject constructor(
   private val countryCodeProvider: CountryCodeProvider,
   private val launchWhatsAppUseCase: LaunchWhatsAppUseCase,
 ) : ViewModel() {
+
+  val countries: List<CountryInfo> = countryCodeProvider.allCountries
 
   private val filterState = MutableStateFlow(ContactsFilterState())
 
@@ -84,14 +85,13 @@ class ContactsViewModel @Inject constructor(
       favoritesOnly = filter.favoritesOnly,
       selectedTagName = filter.selectedTagName,
       defaultCountryIso = prefs.defaultCountryIso,
-      countries = countryCodeProvider.allCountries,
       feedbackMessage = filter.feedbackMessage,
       isFeedbackError = filter.isFeedbackError,
     )
   }.stateIn(
     scope = viewModelScope,
     started = SharingStarted.WhileSubscribed(5_000),
-    initialValue = ContactsUiState(countries = countryCodeProvider.allCountries),
+    initialValue = ContactsUiState(),
   )
 
   fun onSearchQueryChanged(query: String) {
